@@ -1,0 +1,140 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>Cliente</title>
+	</head>
+	<body>
+    <h3>Valores de los sensores</h3>
+    <div id="estados_sensores">
+      
+      <p> Temperatura: <span id="estado_temperatura"></span></p>
+      <p> Luminosidad: <span id="estado_luminosidad"></span></p>
+      <p> Estado de la persiana: <span id="estado_persiana"></span></p>
+      <p> Estado del A/C: <span id="estado_ac"></span></p>
+      <p> Estado del modo automatico: <span id="estado_modo_automatico"></span></p>
+      <p> Estado del sensor de presencia: <span id="estado_presencia"></span></p>
+      <p> Estado de la TV: <span id="estado_tv"></span></p>
+
+      <button id="cambiar_estado_persiana" onclick="cambiar_estado_persiana();">Cambiar estado de la persiana</button>
+
+      <p></p>
+      
+      <button id="cambiar_estado_ac" onclick="cambiar_estado_aire();">Cambiar estado del A/C</button>
+      
+      <p></p>
+
+      <button id="Modo Automatico" onclick="modoAutomatico();">Cambiar estado del modo automatico</button>      
+
+      <p></p>
+      
+      <button id="cambiar_estado_tv" onclick="cambiar_estado_tv();">Cambiar estado de la TV</button>
+      <p></p>
+
+
+    </div>
+
+    <h3>Modificación de datos manuales</h3>
+
+    <form action="javascript:void(0);" onsubmit="javascript:enviar();">
+      <p></p> Introduce datos en los siguientes campos para cambiar el valor de los sensores <p></p>
+
+      Temperatura: <input type="label" id="temp" /><br />
+      Luminosidad: <input type="label" id="lum" /><br />      
+      <p></p>
+
+      <input type="submit" value="Enviar" />
+    </form>
+    
+    <p></p>
+
+  </body>
+	<script src="/socket.io/socket.io.js"></script>
+	<script type="text/javascript">
+		    
+
+	    var estado_persiana = 50; // al 50% al principio
+	    var aire_acondicionado = 0;
+	    var temperatura = 15;
+	    var luminosidad = 10;
+	    var automatico = false;
+	    var tv = false;
+
+	    //Cambiar estados
+		function cambiar_estado_persiana() {
+			socket.emit('cambiar_persiana');
+		}
+
+		function cambiar_estado_aire() {
+			socket.emit('cambiar_ac');
+		}
+
+		function cambiar_estado_tv(){
+			socket.emit('cambiar_tv');
+		}
+
+		function cambiar_estado_presencia(){
+			socket.emit('cambiar_presencia');
+		};
+
+	    function modoAutomatico(){
+	      socket.emit('cambiar_automatico');
+	    }
+
+	    // Las 2 siguientes funciones sirven para subir o bajar la persiana un determinado grado
+	    function subir_persiana(parametro){
+	      estado_persiana  = estado_persiana + parametro;
+	      socket.emit('persiana_subida', estado_persiana) ;      
+	    }
+
+	    function bajar_persiana(parametro){
+	      estado_persiana  = estado_persiana - parametro;
+	      socket.emit('persiana_bajada', estado_persiana) ;
+	    }
+
+	    function enviar() {
+		    var temp = document.getElementById("temp").value;
+		    var lum = document.getElementById("lum").value;
+		    var auto = document.getElementById("auto").value;		    
+			var date = new Date();
+
+	      	var datos_enviar = {temperatura:temp, luminosidad:lum, automatico:auto, fecha:date} ;
+	      	socket.emit('valor_sensores', datos_enviar);
+	    }
+
+
+	    var serviceURL = "http://127.0.0.1:8080";
+		var socket = io.connect(serviceURL);
+
+
+	    //actuadores
+		socket.on('estado_ac', function(estado){
+			document.getElementById('estado_ac').innerHTML=estado ;
+		});
+
+		socket.on('estado_persiana', function(estado){
+			document.getElementById('estado_persiana').innerHTML=estado ;
+		});
+
+	    socket.on('estado_modo_automatico', function(estado){
+	      document.getElementById('estado_modo_automatico').innerHTML=estado ;
+	    });
+
+	    socket.on('estado_tv', function(estado){
+	    	document.getElementById('estado_tv').innerHTML=estado ;
+	    }); 
+
+	    socket.on('estado_presencia', function(estado){
+			document.getElementById('estado_presencia').innerHTML=estado ;
+		});
+
+	    socket.on('estado_temperatura', function(estado){
+	    	document.getElementById('estado_temperatura').innerHTML=estado ;
+	    });
+
+	    socket.on('estado_luminosidad', function(estado){
+	    	document.getElementById('estado_luminosidad').innerHTML = estado ;
+	    });
+
+  </script>
+
+</html>
